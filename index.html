@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sci-Fi Holographic UI</title>
+    <style>
+        /* CSS resets and base styles */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #050510;
+            background-image: url('https://img.heliar.top/file/1775014922180_bg.png');
+            background-position: 0 0;
+            background-size: cover;
+            background-repeat: no-repeat;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            color: #fff;
+        }
+
+        /* Top Bar Image */
+        .top-bar-image {
+            position: fixed;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            pointer-events: none;
+            zoom: 0.7; /* 缩小为原来的 70% */
+        }
+
+        /* Main Screen Container */
+        .main-screen {
+            position: absolute;
+            top: 100px;
+            bottom: 220px;
+            left: 20px;
+            right: 20px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Bottom Interaction Zone */
+        .bottom-zone {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 200px;
+            background: url('https://img.heliar.top/file/1775023361269_bottom_bg2.png') no-repeat bottom center;
+            background-size: 100% 100%;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .options-grid {
+            position: fixed;
+            left: 100px;
+            bottom: 30px;
+            display: grid;
+            grid-template-columns: repeat(4, auto);
+            justify-content: start;
+            gap: 2px 24px; /* 行间距 2px，列间距 24px */
+            margin: 0;
+            padding: 0;
+            z-index: 10;
+        }
+
+        .option-btn {
+            cursor: pointer;
+            transition: transform 0.1s ease, filter 0.2s ease;
+            user-select: none;
+            display: block;
+            margin: 0;
+            padding: 0;
+            zoom: 0.75;
+        }
+
+        .option-btn:hover {
+            filter: brightness(1.15);
+        }
+
+        .option-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* Floating Bubble */
+        .bubble {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 180px;
+            min-height: 46px; /* 保证气泡有足够的高度展示背景图 */
+            box-sizing: border-box;
+            background-image: url('https://img.heliar.top/file/1775025811600_QiPao-my.png');
+            background-size: 100% 100%; /* 拉伸铺满整个气泡区域 */
+            background-repeat: no-repeat;
+            background-position: center;
+            padding: 8px 16px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            text-shadow: 0 0 5px #ffffff;
+            pointer-events: none;
+            animation: floatUp 7s ease-in forwards;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .bubble-avatar {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #fff;
+            flex-shrink: 0;
+            background: #fff;
+        }
+
+        /* System Bubble Override */
+        .bubble.bubble-system {
+            background-image: url('https://img.heliar.top/file/1775025805468_QiPao-other.png');
+            color: #085ABF;
+            text-shadow: none;
+        }
+
+        @keyframes floatUp {
+            0% {
+                bottom: 10px;
+                opacity: 0;
+                transform: translateX(-50%) scale(0.5);
+            }
+            10% {
+                opacity: 1;
+                transform: translateX(calc(-50% - 6px)) scale(1.1);
+            }
+            30% {
+                transform: translateX(calc(-50% + 6px)) scale(1);
+            }
+            50% {
+                transform: translateX(calc(-50% - 6px));
+            }
+            70% {
+                transform: translateX(calc(-50% + 6px));
+            }
+            90% {
+                opacity: 0.8;
+                transform: translateX(calc(-50% - 6px));
+            }
+            100% {
+                bottom: 90%;
+                opacity: 0;
+                transform: translateX(-50%);
+            }
+        }
+
+        /* Title Image */
+        .title-image {
+            display: none; /* 隐藏顶部的标题图片 */
+            position: fixed;
+            top: 160px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            pointer-events: none; /* 防止遮挡下方元素的点击 */
+            zoom: 0.8; /* 缩小为原来的 80% */
+        }
+
+        /* Indicator Icon */
+        #clickIndicator {
+            position: fixed;
+            bottom: 180px;
+            left: 50%;
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            transform: translateX(-50%);
+            width: 50px; /* 根据需要调整指示器大小 */
+            animation: bounceIndicator 0.8s ease-in-out infinite;
+        }
+
+        @keyframes bounceIndicator {
+            0%, 100% {
+                transform: translate(-50%, 0);
+            }
+            50% {
+                transform: translate(-50%, 10px);
+            }
+        }
+
+        /* Hint Image */
+        #hintImage {
+            position: fixed;
+            bottom: 260px;
+            left: 50%;
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            transform: translateX(-50%);
+            width: 300px; /* 放大到原来的2倍 */
+            animation: breatheHint 1.5s ease-in-out infinite;
+        }
+
+        @keyframes breatheHint {
+            0%, 100% {
+                transform: translateX(-50%) scale(1);
+            }
+            50% {
+                transform: translateX(-50%) scale(1.05);
+            }
+        }
+
+        /* Intro Video Styles */
+        #introContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1000;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #introVideo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #startSimBtn {
+            position: absolute;
+            bottom: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1001;
+            padding: 15px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+            background: rgba(0, 150, 255, 0.3);
+            border: 2px solid #00ffff;
+            border-radius: 30px;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        #startSimBtn:hover {
+            background: rgba(0, 150, 255, 0.6);
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.8);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Intro Video Container -->
+    <div id="introContainer">
+        <video id="introVideo" src="https://img.heliar.top/file/1775028553618_bbb_compressed.mp4" playsinline></video>
+        <button id="startSimBtn">开始模拟</button>
+    </div>
+
+    <!-- Main UI Container -->
+    <div id="mainUI" style="display: none;">
+        <!-- Audio Elements -->
+    <audio id="indicatorSound" src="https://img.heliar.top/file/1775026802758_638.mp3" preload="auto"></audio>
+    <audio id="clickSound" src="https://img.heliar.top/file/1775026797113_点击音效.mp3" preload="auto"></audio>
+
+    <!-- Top Bar Image -->
+    <img class="top-bar-image" src="https://img.heliar.top/file/1775024714690_TouXiangLan.png" alt="Top Bar">
+
+    <!-- Title Image Placeholder -->
+    <img class="title-image" src="https://img.heliar.top/file/1775024088285_title.png" alt="Title Placeholder">
+
+    <!-- Main Screen Container -->
+    <div class="main-screen" id="mainScreen">
+    </div>
+
+    <!-- Bottom Interaction Zone -->
+    <div class="bottom-zone"></div>
+
+    <div class="options-grid">
+        <img id="firstBtn" class="option-btn" src="https://img.heliar.top/file/1775015736680_msg01.png" onclick="createBubble('结果重要')" alt="结果重要">
+        <img class="option-btn" src="https://img.heliar.top/file/1775015739091_msg02.png" onclick="createBubble('造福百姓')" alt="造福百姓">
+        <img class="option-btn" src="https://img.heliar.top/file/1775015744753_msg03.png" onclick="createBubble('一心为民')" alt="一心为民">
+        <img class="option-btn" src="https://img.heliar.top/file/1775015737857_msg04.png" onclick="createBubble('善用人才')" alt="善用人才">
+        <img class="option-btn" src="https://img.heliar.top/file/1775015744304_msg05.png" onclick="createBubble('建立汉朝')" alt="建立汉朝">
+        <img class="option-btn" src="https://img.heliar.top/file/1775015742813_msg06.png" onclick="createBubble('带来安稳')" alt="带来安稳">
+    </div>
+
+    <!-- Indicator Image -->
+    <img id="clickIndicator" src="https://img.heliar.top/file/1775027572267_指示器2.png" alt="Indicator">
+    
+        <!-- Hint Image -->
+        <img id="hintImage" src="https://img.heliar.top/file/1775027569781_tishi.png" alt="Hint">
+    </div>
+
+    <script>
+        const systemAvatars = [
+            'https://img.heliar.top/file/1775024826684_user2.png',
+            'https://img.heliar.top/file/1775024830878_user3.png',
+            'https://img.heliar.top/file/1775024831883_user4.png'
+        ];
+
+        const bubbleTexts = ['结果重要', '造福百姓', '一心为民', '善用人才', '建立汉朝', '带来安稳'];
+
+        let hasClicked = false;
+        let indicatorCount = 0;
+        let indicatorInterval;
+        let hideTimeout;
+        let autoSpawnStarted = false;
+
+        function createBubble(text, isSystem = false) {
+            if (!isSystem) {
+                // 用户点击了按钮
+                hasClicked = true;
+                clearInterval(indicatorInterval);
+                clearTimeout(hideTimeout);
+                const indicator = document.getElementById('clickIndicator');
+                const hint = document.getElementById('hintImage');
+                if (indicator) indicator.style.opacity = 0;
+                if (hint) hint.style.opacity = 0;
+
+                // 播放点击音效
+                const clickAudio = document.getElementById('clickSound');
+                if (clickAudio) {
+                    clickAudio.currentTime = 0;
+                    clickAudio.play().catch(e => console.log('Click audio play blocked:', e));
+                }
+
+                // 用户首次点击后，启动系统气泡自动生成
+                if (!autoSpawnStarted) {
+                    autoSpawnStarted = true;
+                    autoSpawnBubbles();
+                }
+            }
+
+            const mainScreen = document.getElementById('mainScreen');
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            if (isSystem) {
+                bubble.classList.add('bubble-system');
+            }
+            
+            // 确定头像
+            let avatarUrl = '';
+            if (isSystem) {
+                const randomIdx = Math.floor(Math.random() * systemAvatars.length);
+                avatarUrl = systemAvatars[randomIdx];
+            } else {
+                avatarUrl = `https://img.heliar.top/file/1775024825964_user1.png`;
+            }
+            
+            // 插入头像和文字
+            bubble.innerHTML = `<img src="${avatarUrl}" class="bubble-avatar" alt="avatar"><span>“${text}”</span>`;
+            
+            // Randomize starting horizontal position across the screen (10% to 90%)
+            const randomLeft = 10 + Math.random() * 80;
+            bubble.style.left = `${randomLeft}%`;
+            
+            // Randomize animation duration slightly for variety (速度减半，时间翻倍)
+            const duration = 6 + Math.random() * 2; // 6s to 8s
+            bubble.style.animationDuration = `${duration}s`;
+
+            mainScreen.appendChild(bubble);
+
+            // Remove bubble after animation ends
+            setTimeout(() => {
+                if (bubble.parentNode) {
+                    bubble.parentNode.removeChild(bubble);
+                }
+            }, duration * 1000);
+        }
+
+        function autoSpawnBubbles() {
+            // 随机 1~3 秒
+            const randomDelay = 1000 + Math.random() * 2000; 
+            setTimeout(() => {
+                const randomText = bubbleTexts[Math.floor(Math.random() * bubbleTexts.length)];
+                createBubble(randomText, true);
+                autoSpawnBubbles(); // 递归调用，继续生成
+            }, randomDelay);
+        }
+
+        function showIndicator() {
+            if (hasClicked || indicatorCount >= 3) {
+                clearInterval(indicatorInterval);
+                return;
+            }
+
+            const indicator = document.getElementById('clickIndicator');
+            const hint = document.getElementById('hintImage');
+            const indicatorSound = document.getElementById('indicatorSound');
+
+            if (indicator) {
+                indicator.style.opacity = 1;
+                if (hint) hint.style.opacity = 1;
+
+                // 播放指示器音效
+                if (indicatorSound) {
+                    indicatorSound.currentTime = 0;
+                    indicatorSound.play().catch(e => console.log('Indicator audio autoplay blocked:', e));
+                }
+
+                indicatorCount++;
+
+                // 2秒后自动消失
+                clearTimeout(hideTimeout);
+                hideTimeout = setTimeout(() => {
+                    indicator.style.opacity = 0;
+                    if (hint) hint.style.opacity = 0;
+                }, 2000);
+            }
+        }
+
+        // 页面加载后启动指示器逻辑 -> 改为在视频播放结束后调用
+        function initMainUI() {
+            // 延迟一点点展示第一次指示器，确保布局已完成
+            setTimeout(() => {
+                showIndicator();
+                // 每5秒展示一遍
+                indicatorInterval = setInterval(showIndicator, 5000);
+            }, 500);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const startBtn = document.getElementById('startSimBtn');
+            const introVideo = document.getElementById('introVideo');
+            const introContainer = document.getElementById('introContainer');
+            const mainUI = document.getElementById('mainUI');
+
+            startBtn.addEventListener('click', () => {
+                startBtn.style.display = 'none';
+                introVideo.play().catch(e => console.log('Video play failed:', e));
+            });
+
+            introVideo.addEventListener('ended', () => {
+                introContainer.style.display = 'none';
+                mainUI.style.display = 'block';
+                initMainUI();
+            });
+        });
+    </script>
+</body>
+</html>
+
