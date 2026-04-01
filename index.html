@@ -49,22 +49,24 @@
         .bottom-zone {
             position: fixed;
             bottom: 0;
-            left: 0;
+            left: 50%;
             width: 100%;
-            height: 200px;
-            background: url('https://img.heliar.top/file/1775023361269_bottom_bg2.png') no-repeat bottom center;
-            background-size: 100% 100%;
+            height: auto;
             z-index: 5;
             pointer-events: none;
+            zoom: 0.9;
+            transform: translateX(-50%) scaleY(0.85);
+            transform-origin: bottom center;
         }
 
         .options-grid {
             position: fixed;
-            left: 100px;
+            left: 50%;
+            transform: translateX(-50%);
             bottom: 30px;
             display: grid;
             grid-template-columns: repeat(4, auto);
-            justify-content: start;
+            justify-content: center;
             gap: 2px 24px; /* 行间距 2px，列间距 24px */
             margin: 0;
             padding: 0;
@@ -294,7 +296,7 @@
     </div>
 
     <!-- Bottom Interaction Zone -->
-    <div class="bottom-zone"></div>
+    <img class="bottom-zone" src="https://img.heliar.top/file/1775023361269_bottom_bg2.png" alt="Bottom Zone">
 
     <div class="options-grid">
         <img id="firstBtn" class="option-btn" src="https://img.heliar.top/file/1775015736680_msg01.png" onclick="createBubble('结果重要')" alt="结果重要">
